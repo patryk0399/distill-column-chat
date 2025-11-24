@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ma-pipeline"              
+version = "0.1.0"                  
+description = "Offline RAG + multi-agent pipeline."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2,<3",
+  "python-dotenv>=1,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[tool.setuptools]
+# Treat as packages ( __init__.py)
+packages = ["src", "data", "rag", "agents", "ui"]

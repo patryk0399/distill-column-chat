@@ -1,0 +1,115 @@
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+*.pyd
+*.dll
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+proto5/
+
+# Environment / secrets (keep real values local, commit only templates like .env.example)
+.env
+.env.*
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+pip-wheel-metadata/
+
+# Python tooling caches
+.pytest_cache/
+.python-version
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+.cache/
+
+# Coverage / test reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editor configs
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs
+logs/
+*.log
+
+# -----------------------------------------------------------------------------
+# Project-specific: data, models, embeddings, vector stores, caches
+# -----------------------------------------------------------------------------
+
+# Local datasets and documents (keep samples or synthetic examples in a separate folder if needed)
+data/raw/
+data/local/
+data/documents/
+data/tmp/
+data/cache/
+data/logs/
+
+# Vector stores / embeddings / indexes (FAISS, Chroma, etc.)
+data/index/
+data/embeddings/
+data/faiss/
+data/chroma/
+*.faiss
+*.hnsw
+*.index
+
+# Model weights / checkpoints / artifacts
+models/
+checkpoints/
+artifacts/
+*.bin
+*.gguf
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.safetensors
+
+# Streamlit and app caches
+.streamlit/
+**/.streamlit/
+
+# SQLite and other local DBs
+*.sqlite
+*.sqlite3
+*.db
+
+# Generic temporary folders
+tmp/
+tmp_*/
+temp/

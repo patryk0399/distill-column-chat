@@ -1,0 +1,4 @@
+ENV=dev
+DATA_DIR=./data
+LOG_LEVEL=INFO
+LLM_BACKEND=dummy
