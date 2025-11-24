@@ -17,6 +17,7 @@ dependencies = [
   "langchain-text-splitters>=0.3,<1",
   "sentence-transformers>=2,<3",
   "faiss-cpu>=1,<2",
+  "llama-cpp-python>=0.2,<0.3",
 ]
 
 [project.optional-dependencies]

@@ -27,6 +27,11 @@ class AppConfig(BaseModel):
     embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     llm_backend: str = "dummy"
+    #NOTE: for llama.cpp specific (fir now)
+    llm_model_path: Path = Path("models") / "llamacpp" / "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+    llm_context_window: int = 2048
+    llm_n_gpu_layers: int = 10      # 0=CPU only, >0=some layers on GPU
+    llm_n_threads: int = 4         #  threading hint
 
 
 def load_config() -> AppConfig:
@@ -36,19 +41,35 @@ def load_config() -> AppConfig:
     validate them into an AppConfig instance.
     """
     # Load .env from the current working directory if present.
-    load_dotenv()
+    load_dotenv(override=True)
 
-    # Collect raw values from environment with explicit defaults.
     raw_config = {
-    "env": os.getenv("ENV", "dev"),
-    "data_dir": os.getenv("DATA_DIR", "data"),
-    "log_level": os.getenv("LOG_LEVEL", "INFO"),
-    "llm_backend": os.getenv("LLM_BACKEND", "dummy"),
-    "embedding_model_name": os.getenv(
-        "EMBEDDING_MODEL_NAME",
-        "sentence-transformers/all-MiniLM-L6-v2",
-    ),
-}
+        "env": os.getenv("ENV", "dev"),
+        "data_dir": os.getenv("DATA_DIR", "data"),
+        "log_level": os.getenv("LOG_LEVEL", "INFO"),
+        "llm_backend": os.getenv("LLM_BACKEND", "dummy"),
+        "embedding_model_name": os.getenv(
+            "EMBEDDING_MODEL_NAME",
+            "sentence-transformers/all-MiniLM-L6-v2",
+        ),
+    }
+
+    # If no values are set in .env use raw_config
+    llm_model_path_env = os.getenv("LLM_MODEL_PATH")
+    if llm_model_path_env is not None:
+        raw_config["llm_model_path"] = llm_model_path_env
+
+    llm_context_window_env = os.getenv("LLM_CONTEXT_WINDOW")
+    if llm_context_window_env is not None:
+        raw_config["llm_context_window"] = int(llm_context_window_env)
+
+    llm_n_gpu_layers_env = os.getenv("LLM_N_GPU_LAYERS")
+    if llm_n_gpu_layers_env is not None:
+        raw_config["llm_n_gpu_layers"] = int(llm_n_gpu_layers_env)
+
+    llm_n_threads_env = os.getenv("LLM_N_THREADS")
+    if llm_n_threads_env is not None:
+        raw_config["llm_n_threads"] = int(llm_n_threads_env)
 
     try:
         config = AppConfig(**raw_config)
