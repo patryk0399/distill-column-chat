@@ -1,5 +1,0 @@
-agents
-data
-rag
-src
-ui
