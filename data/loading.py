@@ -11,11 +11,13 @@ from typing import List
 
 @dataclass
 class RawDocument:
-    """Represents a document via a class.
+    """Represents a document via a class. 
+    Wrapper for retrieved documents.
 
     content: Full text content (for now)= of the document.
     path: Filesystem path of document.
-    title: Short title taken from the filename.
+    title: Short title taken from the filename. 
+    #todo later make sure documents are named with title as file name
     """
 
     content: str

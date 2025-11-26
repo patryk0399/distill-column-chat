@@ -16,8 +16,8 @@ from collections.abc import Callable
 from typing import Dict
 
 from langchain_core.language_models import BaseLanguageModel
-from langchain_community.llms.fake import FakeListLLM
-from langchain_community.llms.human import HumanInputLLM
+# from langchain_community.llms.fake import FakeListLLM
+# from langchain_community.llms.human import HumanInputLLM
 from langchain_community.llms import LlamaCpp
 
 from src.config import AppConfig, load_config
@@ -75,23 +75,23 @@ def get_local_llm(cfg: AppConfig) -> BaseLanguageModel:
 # ---------------------------------------------------------------------------
 
 
-def _build_dummy_llm(cfg: AppConfig) -> BaseLanguageModel:
-    """Dummy"""
-    _ = cfg  # Builder signature
+# def _build_dummy_llm(cfg: AppConfig) -> BaseLanguageModel:
+#     """Dummy"""
+#     _ = cfg  # Builder signature
 
-    responses = [
-        (
-            "Dummy LLM response: this is backend for testing the pipeline.\n"
-            "No language generation here."
-        )
-    ]
-    return FakeListLLM(responses=responses)
+#     responses = [
+#         (
+#             "Dummy LLM response: this is backend for testing the pipeline.\n"
+#             "No language generation here."
+#         )
+#     ]
+#     return FakeListLLM(responses=responses)
 
 
-def _build_human_llm(cfg: AppConfig) -> BaseLanguageModel:
-    """Dummy"""
-    _ = cfg  # builder signature.
-    return HumanInputLLM()
+# def _build_human_llm(cfg: AppConfig) -> BaseLanguageModel:
+#     """Dummy"""
+#     _ = cfg  # builder signature.
+#     return HumanInputLLM()
 
 def _build_llama_cpp_llm(cfg: AppConfig) -> BaseLanguageModel:
     """Local llama.cpp-based LLM backend.
@@ -111,12 +111,10 @@ def _build_llama_cpp_llm(cfg: AppConfig) -> BaseLanguageModel:
 
 
 def _register_default_backends() -> None:
-    """Register built-in backends for the early iterations."""
-    register_llm_backend("dummy", _build_dummy_llm)
-    register_llm_backend("human", _build_human_llm)
-    register_llm_backend("llama_cpp", _build_llama_cpp_llm)
-
-
+#     """Register built-in backends for the early iterations."""
+#     register_llm_backend("dummy", _build_dummy_llm)
+#     register_llm_backend("human", _build_human_llm)
+      register_llm_backend("llama_cpp", _build_llama_cpp_llm)
 
 # Registering backends at import-time so get_local_llm() can be used immediately
 _register_default_backends()

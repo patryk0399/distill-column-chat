@@ -2,13 +2,13 @@ from __future__ import annotations
 
 """RAG query helpers.
 
-Giving functions that can be reused by other layers.
+Prodiving functions that can be reused by other layers.
 This module belongs to the context and LLM layers:
 - Context layer:
   - Loads FAISS index built in rag.build_index.
   - Retrieves relevant chunks for a given query.
 - LLM layer:
-  - Builds a RAG-prompt from retrieved chunks with user query.
+  - Builds the RAG-prompt from retrieved chunks with user query.
   - Uses the configured local LLM backend via get_local_llm.
 """
 
@@ -55,7 +55,7 @@ def retrieve(
     k: int = 3,
     cfg: Optional[AppConfig] = None,
 ) -> List[Document]:
-    """Retrieve the top-k documents for a natural language query.
+    """Retrieve the top-k documents for an user query.
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ def _build_rag_prompt(query: str, docs: List[Document]) -> str:
         context_blocks.append(f"{header}\n{d.page_content}")
 
     context_text = "\n\n".join(context_blocks)
-
+    print("[query]------------------------------------\n", context_text)
     prompt = ( 
         "Use the context below to answer the question. If the answer is not clearly contained in the context, say that you do not know.\n\n"
         f"Context:\n{context_text}\n\n"  

@@ -26,7 +26,7 @@ class AppConfig(BaseModel):
     data_dir: Path = Path("data")
     embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
-    llm_backend: str = "dummy"
+    llm_backend: str = "llamacpp"
     #NOTE: for llama.cpp specific (fir now)
     llm_model_path: Path = Path("models") / "llamacpp" / "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
     llm_context_window: int = 2048
