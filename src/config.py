@@ -30,8 +30,10 @@ class AppConfig(BaseModel):
     #NOTE: for llama.cpp specific (fir now)
     llm_model_path: Path = Path("models") / "llamacpp" / "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
     llm_context_window: int = 2048
-    llm_n_gpu_layers: int = 10      # 0=CPU only, >0=some layers on GPU
-    llm_n_threads: int = 4         #  threading hint
+    llm_n_gpu_layers: int = 10      #  0=CPU only, >0=some layers on GPU
+    llm_n_threads: int = 4          #  threading hint
+    max_messages: int = 20          #  Max number of displayed messages (not used for context)
+    #todo  prompt limit for context / "short-term-memory"
 
 
 def load_config() -> AppConfig:

@@ -51,6 +51,7 @@ class BaseChatSession:
 
         self._cfg: AppConfig = cfg
         self._history: List[ChatTurn] = []
+        self._max_messages = cfg.max_messages  #Eyecandy "short-term memory" limit.
 
         print("[chat] Initialised BaseChatSession.")
         print("[chat] Using LLM backend:", self._cfg.llm_backend)
@@ -75,6 +76,24 @@ class BaseChatSession:
 
         self._history.clear()
         print("[chat] History cleared.")
+
+    def _short_term_history(self) -> None:
+        """Monitor for maximum number of stored chats (#todo adjust for context length).
+        
+        "short-term memory"
+        """
+
+        max_messages = self._max_messages
+        if max_messages <= 0:
+            return
+
+        current_len = len(self._history)
+        if current_len <= max_messages:
+            return
+
+        # Keep only the last n messages
+        self._history = self._history[-max_messages:]
+        print(f"[chat] Truncated history to {len(self._history)} messages")
 
     def ask(self, user_input: str, k: int = 3) -> str:
         """Process a single user input and return the assistant's/RAG answer.
@@ -110,6 +129,8 @@ class BaseChatSession:
         answer_text = rag_answer(user_input, k=k, cfg=self._cfg)
 
         self._history.append(ChatTurn(role="assistant", content=answer_text))
+
+        self._short_term_history()
 
         print("[chat] Assistant answer length (chars):", len(answer_text))
 

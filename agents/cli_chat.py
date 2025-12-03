@@ -63,6 +63,7 @@ def run_cli_chat(session: Optional[BaseChatSession] = None) -> None:
             continue
 
         if (stripped == ":q"):
+            # ich muss raaaaauuus
             print("[cli] User requested exit.")
             break
 
@@ -73,7 +74,9 @@ def run_cli_chat(session: Optional[BaseChatSession] = None) -> None:
 
         print("[cli] Sending message to chat session ...")
         answer = session.ask(stripped)
-
+        print()
+        print("====== ANSWER ======")
+        print()
         print("system:", answer)
         print()
 
