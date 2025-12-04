@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Index-building tools for context layer.
 
-This builds a local vector index from documents. 
+This builds a local vector index from documents (raw text and PDFs with OCR processing).
 Note: belongs to the "context layer" in the framework: it turns data-layer RawDocument objects into
 chunked and embedded representations stored in the vector store.
 """
@@ -14,7 +14,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from data.loading import RawDocument, load_raw_text_documents
+from data.loading import RawDocument, load_raw_text_documents, load_scanned_pdf_documents
 from src.config import AppConfig, load_config
 
 
@@ -74,11 +74,11 @@ def _build_text_chunks(
 
 
 def build_index(cfg: AppConfig) -> None:
-    """Build a FAISS(for now for testing) index from raw text documents.
+    """Build a FAISS(for now for testing) index from raw text and PDF documents.
 
-    This function reads documents from data/docs/, splits them into chunks,
-    embeds them using a local HuggingFace sentence-transformer model (for now, may change later), and
-    stores the resulting index under data/index/faiss/.
+    This function reads documents from data/docs/, splits them into chunks, 
+    embeds them using a local HuggingFace sentence-transformer model (for now, may change later), and stores
+    the resulting index under data/index/faiss/.
     """
     docs_root = Path(cfg.data_dir) / "docs"
     index_root = Path(cfg.data_dir) / "index" / "faiss"
@@ -86,10 +86,16 @@ def build_index(cfg: AppConfig) -> None:
     print("[index] Using docs root:", docs_root)
     print("[index] Using index root:", index_root)
 
-    raw_docs = load_raw_text_documents(docs_root)
-    if not raw_docs:
+    raw_text_docs = load_raw_text_documents(docs_root)
+    pdf_docs = load_scanned_pdf_documents(docs_root)
+
+    total_docs = len(raw_text_docs) + len(pdf_docs)
+    if total_docs == 0:
         print("[index] No documents found. Nothing to index.")
         return
+
+    print(f"[index] Loaded {len(raw_text_docs)} text documents and {len(pdf_docs)} PDF documents.")
+    raw_docs = raw_text_docs + pdf_docs
 
     texts, metadatas = _build_text_chunks(raw_docs)
     if not texts:

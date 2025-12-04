@@ -32,7 +32,7 @@ class AppConfig(BaseModel):
     llm_context_window: int = 2048
     llm_n_gpu_layers: int = 10      #  0=CPU only, >0=some layers on GPU
     llm_n_threads: int = 4          #  threading hint
-    max_messages: int = 20          #  Max number of displayed messages (not used for context)
+    max_messages: int = 20          #  max number of displayed messages (not used for context)
     #todo  prompt limit for context / "short-term-memory"
 
 
