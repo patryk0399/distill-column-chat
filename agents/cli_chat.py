@@ -7,7 +7,8 @@ Connects BaseChatSession to terminal interface.
 from typing import Optional
 
 from src.config import AppConfig, load_config
-from agents.base_chat import BaseChatSession
+from rag.query import answer as rag_answer
+
 
 
 def _print_intro() -> None:
@@ -20,32 +21,51 @@ def _print_intro() -> None:
     print("=" * 60)
     print("Commands:")
     print("  :q      ->  End the chat session")
-    print("  :reset  ->  Clear the chat history")
     print()
 
     #todo for UI: give hints for the user.
     print("Type your question and press Enter.")
 
+def ask(user_input: str, k: int = 3, cfg: AppConfig = None) -> str:
+        """Process a single user input and return the assistant's/RAG answer.
 
-def _create_session(cfg: Optional[AppConfig] = None) -> BaseChatSession:
-    """Create a BaseChatSession with the given or loaded configuration.
-    """
-    if cfg is None:
-        cfg = load_config()
-        print("[cli] Loaded AppConfig from environment.")
+        Parameters
+        ----------
+        user_input:
+            User question query.
+        k:
+            Number of chunks to retrieve for RAG context. Passed through to
+            `rag_answer` (potentially doppelt-gemoppelt, we'll find out).
 
-    # Creating chat session here so we can change the config
-    # handling later without changing the rest of the CLI loop.
-    session = BaseChatSession(cfg=cfg)
-    return session
+        Returns
+        -------
+        str
+            Answer text by the RAG pipeline.
+        """
+    
+        user_input = user_input.strip()
+        if not user_input:
+            print("[chat] Empty user input received. Returning empty answer.")
+            return ""
+
+        print("[chat] New user message:", repr(user_input))
+
+        # Append user prompt before calling the model so thats later logic can
+        # inspect the question even if model call fails.
+       
+
+        # The actual RAG work goes to rag.query.answer (for now #todo).
+        # Goal: only save user questions and model answers. No retrieval or Agent/-prompt details.
+        answer_text = rag_answer(user_input, k=k, cfg=cfg)
+
+        print("[chat] Assistant answer length (chars):", len(answer_text))
+
+        return answer_text
 
 
-def run_cli_chat(session: Optional[BaseChatSession] = None) -> None:
+def run_cli_chat() -> None:
     """Run chat loop in the terminal."""
-
-    if session is None:
-        session = _create_session()
-
+    cfg = load_config()
     _print_intro()
 
     while True:
@@ -67,13 +87,10 @@ def run_cli_chat(session: Optional[BaseChatSession] = None) -> None:
             print("[cli] User requested exit.")
             break
 
-        if (stripped == ":reset"):
-            session.reset()
-            print("[cli] Chat history cleared.")
-            continue
 
         print("[cli] Sending message to chat session ...")
-        answer = session.ask(stripped)
+
+        answer = ask(stripped, cfg = cfg)
         print()
         print("====== ANSWER ======")
         print()
