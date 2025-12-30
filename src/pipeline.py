@@ -88,6 +88,7 @@ def _choose_forced_tool(last_user_text: str) -> str | None:
     """Router (concept), replace later.
     must force `tool_choice`.
     """
+    print("[GOING INTO FORCED TOOL SELECTION]")
     t = (last_user_text or "").lower()
 
     if any(x in t for x in ["search"]):
@@ -99,8 +100,10 @@ def _choose_forced_tool(last_user_text: str) -> str | None:
     return None
 
 
-def chatbot_node(state: AgentState, llm) -> AgentState:
+def chatbot_node(state: AgentState) -> AgentState:
     """answer directly OR force a tool call (ChatLlamaCpp)."""
+    print("[GOING INTO CHATBOT]")
+    #print("[AGENT STATE ATTR] ", getattr())
     _dbg("ENTER chatbot_node")
     _dump_messages(state["messages"], label="state.messages (incoming)")
 
@@ -116,8 +119,25 @@ def chatbot_node(state: AgentState, llm) -> AgentState:
     # Decide whether to force a tool call
     last_human = next((m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)), None)
     forced_tool = _choose_forced_tool(last_human.content if last_human else "")
+    cfg = load_config()
+    llm = get_local_llm(cfg=cfg)
+    #if(len(state)>1):
 
-    if forced_tool:
+    last_mgstype = type(state["messages"][-1])
+    print("====================================== ", last_mgstype.__name__)
+    if (last_mgstype.__name__ =="AIMessage"):
+        print("[GET FINISH REASON BEFORE LLM.INVOKE] ", last_mgstype.response_metadata["finish_reason"])
+
+    lastIsTool = False
+    if (last_mgstype.__name__ in ["ToolMessage"]):
+       # print("====== [GET FINISH REASON BEFORE LLM.INVOKE] ", last_mgstype.response_metadata["finish_reason"])
+        print("====== LAST IS TOOL")
+        lastIsTool = True
+    else:
+        print("====== LAST IS NOT (!!!) TOOL")
+        lastIstTool = False
+
+    if forced_tool and state and not lastIsTool:
         _dbg("chatbot_node: forcing tool_choice =", forced_tool)
         # Force one tool because of ChatLlamaCpp limitations
         llm_with_tools = llm.bind_tools(
@@ -129,6 +149,11 @@ def chatbot_node(state: AgentState, llm) -> AgentState:
         _dbg("chatbot_node: no tool forced; answering directly")
         response = llm.invoke(messages)
 
+    
+    print("================", type(response).__name__)
+    if(type(response).__name__ == "AIMessage"):
+        print("[GET FINISH REASON AFTER LLM.INVOKE] ", response.response_metadata["finish_reason"])# state["messages"][0][0])#[0]["finish_reason"])
+
     _dbg("EXIT chatbot_node")
     _dbg("llm response type=", type(response).__name__)
     _dbg("llm response tool_calls=", getattr(response, "tool_calls", None))
@@ -137,24 +162,26 @@ def chatbot_node(state: AgentState, llm) -> AgentState:
 
 
 def should_continue(state: AgentState) -> Literal["tools", "end"]:
+    print("[should_continue state[messages]]: ", state["messages"])
     last = state["messages"][-1]
+    print("last: ", last)
     tc = getattr(last, "tool_calls", None)
+    print("tc: ", tc)
     decision = "tools" if tc else "end"
-    _dbg("should_continue:", decision, "| last=", _msg_brief(last))
+    _dbg("[should_continue:]", decision, "| last=", _msg_brief(last))
     return decision
 
 
 def build_graph(memory):
     cfg = load_config()
-    llm = get_local_llm(cfg=cfg)
 
     _dbg("build_graph:", "model_path=", getattr(cfg, "llm_model_path", None))
     _dbg("build_graph:", "tools=", [getattr(t, "name", type(t).__name__) for t in tools])
 
     graph_builder = StateGraph(AgentState)
 
-    from functools import partial
-    graph_builder.add_node("chatbot", partial(chatbot_node, llm=llm))
+   # from functools import partial
+    graph_builder.add_node("chatbot", chatbot_node)
     graph_builder.add_node("tools", tool_node)
 
     graph_builder.add_edge(START, "chatbot")
@@ -165,6 +192,7 @@ def build_graph(memory):
 
 
 def chat_with_memory(message: str, graph, thread_id: str):
+    print("[GOING INTO CHAT WITH MEMORY]")
     config = {"configurable": {"thread_id": thread_id}}
     initial_state = {"messages": [HumanMessage(content=message)]}
 
