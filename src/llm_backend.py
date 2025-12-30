@@ -24,7 +24,7 @@ from src.config import AppConfig
 def get_local_llm(cfg: AppConfig) -> BaseLanguageModel:
     """Return a configured local LLM via AppConfig.
     """
-    llm = _build_open_ai_llm(cfg)
+    llm = _build_chat_llama_cpp_llm(cfg)
     print(f"[llm] Initialising llama.cpp backend with model_path='{cfg.llm_model_path}'.")
     return llm
 

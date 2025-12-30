@@ -26,8 +26,8 @@ class AppConfig(BaseModel):
     embedding_model_name: str = os.getenv("EMBEDDING_MODEL_NAME", "sentence-transformers/all-MiniLM-L12-v2")
     # llm_backend: str = os.getenv("LLM_BACKEND", "llama_cpp")
     # llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "llamacpp" / "Llama-3-Groq-8B-Tool-Use-Q8_0.gguf")
-    # llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "llamacpp" / "Hermes-2-Pro-Mistral-7B.Q8_0.gguf")
-    llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "openai" / "gpt-oss-20b-mxfp4.gguf")
+    llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "llamacpp" / "Hermes-2-Pro-Mistral-7B.Q8_0.gguf")
+    # llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "openai" / "gpt-oss-20b-mxfp4.gguf")
     llm_context_window: int = os.getenv("LLM_CONTEXT_WINDOW", 2048)
     llm_n_gpu_layers: int = os.getenv("LLM_N_GPU_LAYERS", 10)            #  0=CPU only, >0=some layers on GPU
     llm_n_threads: int = os.getenv("LLM_N_THREADS", 4)                   #  threading hint
