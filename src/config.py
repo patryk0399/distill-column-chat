@@ -10,9 +10,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-import os
-
-from dotenv import load_dotenv
 from pydantic import BaseModel, ValidationError
 
 
@@ -22,19 +19,31 @@ class AppConfig(BaseModel):
         Will be used by all modules to handle paths, variables, etc.
     """
 
-    data_dir: Path = os.getenv("DATA_DIR", Path("data"))
-    embedding_model_name: str = os.getenv("EMBEDDING_MODEL_NAME", "sentence-transformers/all-MiniLM-L12-v2")
-    # llm_backend: str = os.getenv("LLM_BACKEND", "llama_cpp")
-    # llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "llamacpp" / "Llama-3-Groq-8B-Tool-Use-Q8_0.gguf")
-    llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "llamacpp" / "Hermes-2-Pro-Mistral-7B.Q8_0.gguf")
-    # llm_model_path: Path = os.getenv("LLM_MODEL_PATH", Path("models") / "openai" / "gpt-oss-20b-mxfp4.gguf")
-    llm_context_window: int = os.getenv("LLM_CONTEXT_WINDOW", 2048)
-    llm_n_gpu_layers: int = os.getenv("LLM_N_GPU_LAYERS", 10)            #  0=CPU only, >0=some layers on GPU
-    llm_n_threads: int = os.getenv("LLM_N_THREADS", 4)                   #  threading hint
-    max_messages: int = os.getenv("MAX_MESSAGES", 20)                    #  max number of displayed messages (not used for context)
-    llm_n_batch: int = os.getenv("LLM_N_BATCH", 8)
-    llm_use_mmap: bool = os.getenv("LLM_USE_MMAP", False)
-    llm_use_mlock: bool = os.getenv("LLM_USE_MLOCK", False)
+    # IF YOU CHANGE THE MODEL ALSO CHANGE chat_format IN llm_backend.py if needed!!!!
+    # Cretain models need or only work with specific chat_format(s) !!!
+    model: str = "Hermes-3-Llama-3.2-3B.Q8_0.gguf"
+    # model: str = "Hermes-2-Pro-Mistral-7B.Q8_0.gguf"
+    # model: str = "Hermes-2-Pro-Mistral-7B.Q8_0.gguf"
+    # model: str = "Llama-3-Groq-8B-Tool-Use-Q8_0.gguf"
+    # model: str = "Llama-3-SauerkrautLM-8b-Instruct-Q8_0_L.gguf"
+    # model: str = 
+    llm_model_path: Path = Path("models") / "llamacpp" / model
+    data_dir: Path = "data"
+    embedding_model_name: str = "sentence-transformers/all-MiniLM-L12-v2"
+
+    llm_context_window: int = 10004 #M
+    llm_n_gpu_layers: int = 20 #HW #M            #  0=CPU only, >0=some layers on GPU
+    llm_n_threads: int = 6 #HW                  #  threading hint
+    max_messages: int = 20                 #  max number of displayed messages (not used for context)
+    llm_n_batch: int = 8
+    llm_use_mmap: bool = True
+    llm_use_mlock: bool = False
+    
+    retrieve_k_min: int = 3 
+    retrieve_k_max: int = 5 # not used right now
+    index_chunk_size: int = 1000
+    index_chunk_overlap: int = 150
+
     #todo  prompt limit for context / "short-term-memory"
 
 
@@ -46,7 +55,7 @@ def load_config() -> AppConfig:
     """
     try:
         # Load .env from the current working directory if present.
-        load_dotenv(override=True)
+        # load_dotenv(override=True)
         config = AppConfig()
     except ValidationError as exc:
         print("[config] Failed to validate AppConfig or .env is missing:")
