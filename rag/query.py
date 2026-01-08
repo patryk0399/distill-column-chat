@@ -2,6 +2,7 @@ from __future__ import annotations
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 from typing import Literal
+from agents.prompts import GENERAL_SYSTEM_PROMPT
 
 """RAG query helpers.
 
@@ -191,12 +192,7 @@ def _build_rag_prompt(query: str, docs: List[Document]) -> str:
 
     context_text = "\n\n".join(context_blocks)
     print("[query]------------------------------------\n", context_text)
-    system_prompt = """\
-        Du bist ein hilfreicher Assistent.
-        Nutze den folgenden Kontext, um die Frage zu beantworten.
-        Wenn die Antwort nicht klar im Kontext vorhanden ist, sag: "Ich weiß es nicht."
-        Antworte ausschließlich auf Deutsch.
-        """
+    system_prompt = GENERAL_SYSTEM_PROMPT
 
     user_prompt = f"""\
         Kontext:
