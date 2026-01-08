@@ -43,7 +43,7 @@ def _build_chat_llama_cpp_llm(cfg: AppConfig) -> BaseLanguageModel:
         verbose=True, #getattr(cfg, "llm_verbose", False),
     
         model_kwargs={
-            "chat_format": "chatml",
+            "chat_format": "chatml", #remember to adjust if needed when choosing a different model
             "temperature": getattr(cfg, "llm_temperature", 0.2),
             "top_p": getattr(cfg, "llm_top_p", 0.95),
         },
