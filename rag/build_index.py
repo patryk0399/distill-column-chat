@@ -22,7 +22,7 @@ from src.config import AppConfig, load_config
 
 def _build_text_chunks(
     docs: Sequence[RawDocument],
-    chunk_size: int = 1000, 
+    chunk_size: int = 750, 
     chunk_overlap: int = 150,
 ) -> Tuple[List[str], List[Dict[str, str]]]:
     """Split documents into smaller text chunks with metadata.
@@ -43,13 +43,16 @@ def _build_text_chunks(
     metadatas:
         List of metadata dicts aligned with texts.
     """
+
     if not docs:
         print("[index] No documents provided for chunking.")
         return [], []
 
+    cfg = load_config()
+
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
+        chunk_size=cfg.index_chunk_size,
+        chunk_overlap=cfg.index_chunk_overlap,
     )
 
     texts: List[str] = []
