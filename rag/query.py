@@ -1,4 +1,7 @@
 from __future__ import annotations
+from langchain_core.tools import tool
+from pydantic import BaseModel, Field
+from typing import Literal
 
 """RAG query helpers.
 
@@ -52,8 +55,8 @@ def _load_vector_store(cfg: AppConfig) -> FAISS:
 
 def retrieve(
     query: str,
-   # k: int = 3,
-   # cfg: Optional[AppConfig] = None,
+    k: int = 3,
+    cfg: Optional[AppConfig] = None,
 ) -> List[Document]:
     """Retrieve the top-k documents for an user query.
 
@@ -71,9 +74,8 @@ def retrieve(
     List[Document]
         Retrieved LangChain Document objects with metadata and content.
     """
-   # if cfg is None:
-    k = 3
-    cfg = load_config()
+    if cfg is None:
+        cfg = load_config()
     print("[query] Loaded AppConfig from environment.")
 
     print(f"[query] Retrieving top-{k} chunks for query:")
@@ -83,28 +85,100 @@ def retrieve(
     vector_store = _load_vector_store(cfg)
     docs = vector_store.similarity_search(query, k=k)
 
-    # ----------------
+    print(f"[query] Retrieved {len(docs)} chunk(s).")
+    for i, d in enumerate(docs, start=1):
+        source = d.metadata.get("source", "<unknown>")
+        title = d.metadata.get("title", "<no title>")
+        chunk_index = d.metadata.get("chunk_index", "?")
+        print(f"[query]  [{i}] source={source} title={title} chunk_index={chunk_index}")
+
+    print("DOCS1:\n", docs)
+    return docs
+
+class Retrieve2Input(BaseModel):
+    query: str = Field(
+        default = None,
+        description=
+        """Input query for the retrival task. Must not be empty.
+        Will be used for RAG functionality. 
+        Based on this input query relevant documents are retrieved"""
+                    )
+    k: int = Field(
+        default = 3,
+        description = 
+        """Number of chunks to retrieve from the index. Must be at least 3. At most 5.
+        Range: 3 - 5.
+        If the problem is simple, lower values for k suffice.
+        If the problem is complex, higher values should be chosen for k.
+        """
+    )
+    # Having to adjust this using natural language is tiring. The LLM does what it wants.
+    # Needs to understand how much context is available to not overshoot the token
+    # limit with just the retrieval.
+
+@tool(args_schema=Retrieve2Input)
+def retrieve2(
+    query: str,
+    k: int = 3,
+) -> List[Document]:
+    """Retrieve the top documents for an user query.
+
+    Parameters
+    ----------
+    query:
+        User query String.
+    k:
+        Number of chunks to retrieve from the index.
+    Returns
+    -------
+    List[Document]
+        Retrieved LangChain Document objects with metadata and content.
+    """
+    # if(query == None):
+    #     return "No query given."
+    
+    cfg = load_config()
+    print("[query] Loaded AppConfig from environment.")
+
+    # failsafe if tool calling mechanism of LLM fails to give proper k-values.
+    # Despite a schema and natural language description of values to set
+    # most models will still fail to set them correctly
+    if(k<cfg.retrieve_k_min):
+        print(f"query] k is lower than config min of {cfg.retrieve_k_min}. k is {k}")
+        k=cfg.retrieve_k_min
+        print(f"query] k was set via config to {cfg.retrieve_k_min}")
+    print(f"[query] Retrieving top-{k} chunks for query:")
+    print("        ", repr(query))
+
+
+    vector_store = _load_vector_store(cfg)
+    docs = vector_store.similarity_search(query, k=k)
+
     context_blocks: list[str] = []  
     for i, d in enumerate(docs, start=1): 
         source = d.metadata.get("source", "<unknown>")  
-        #chunk_index = d.metadata.get("chunk_index", "?")
-        header = f"[{i}]" # Source: {source}"
+        chunk_index = d.metadata.get("chunk_index", "?")
+        header = f"[{i}] Source: {source} | Chunk: {chunk_index}"
         context_blocks.append(f"{header}\n{d.page_content}")
 
     context_text = "\n\n".join(context_blocks)
-    print("---------------------- context text: ", context_text)
+    context_text = f"Tool output: {context_text}" # Why does it work more reliable when including this ????????????
+                                                  # May need to structure the responses more literally 
+
+    print("DOCS2:\n", context_text)
     return context_text
-    # ---------------- tmp block for structured output to ToolMessage content for LLM downstream tasks
-    # ---------------- original code block (comment-in for CLI interaction):
-    # print(f"[query] Retrieved {len(docs)} chunk(s).")
-    # for i, d in enumerate(docs, start=1):
-    #     source = d.metadata.get("source", "<unknown>")
-    #     title = d.metadata.get("title", "<no title>")
-    #     chunk_index = d.metadata.get("chunk_index", "?")
-    #     print(f"[query]  [{i}] source={source} title={title} chunk_index={chunk_index}")
 
-    # return docs
+    # ----------------
+    # context_blocks: list[str] = []  
+    # for i, d in enumerate(docs, start=1): 
+    #     source = d.metadata.get("source", "<unknown>")  
+    #     #chunk_index = d.metadata.get("chunk_index", "?")
+    #     header = f"[{i}]" # Source: {source}"
+    #     context_blocks.append(f"{header}\n{d.page_content}")
 
+    # context_text = "\n\n".join(context_blocks)
+    # print("---------------------- context text: ", context_text)
+    # return context_text
 
 def _build_rag_prompt(query: str, docs: List[Document]) -> str:
     """Build a RAG prompt from the user query and retrieved documents."""
