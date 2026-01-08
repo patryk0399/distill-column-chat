@@ -14,12 +14,9 @@ Layer mapping:
 
 from langchain_core.language_models import BaseLanguageModel
 from langchain_community.chat_models import ChatLlamaCpp
-from langchain_openai import ChatOpenAI
-# from langchain_community.chat_models import ChatOpenAI
-
 
 from src.config import AppConfig
-
+from agents.prompts import GENERAL_SYSTEM_PROMPT
 
 def get_local_llm(cfg: AppConfig) -> BaseLanguageModel:
     """Return a configured local LLM via AppConfig.
@@ -28,19 +25,12 @@ def get_local_llm(cfg: AppConfig) -> BaseLanguageModel:
     print(f"[llm] Initialising llama.cpp backend with model_path='{cfg.llm_model_path}'.")
     return llm
 
-def _build_open_ai_llm(cfg: AppConfig):
-    return ChatOpenAI(
-        openai_api_base="http://127.0.0.1:8080/v1",
-        openai_api_key="no-key",        # dummy; still required by client
-        model="gpt-oss-20b-mxfp4.gguf",          # IMPORTANT: not the gguf path
-        temperature=0,
-        )
 
 def _build_chat_llama_cpp_llm(cfg: AppConfig) -> BaseLanguageModel:
     """Backend
     """
    
-    chat_format = getattr(cfg, "llm_chat_format", "chatml")
+    #chat_format = getattr(cfg, "llm_chat_format", "chatml")
 
     return ChatLlamaCpp(
         model_path=str(cfg.llm_model_path),
@@ -50,10 +40,10 @@ def _build_chat_llama_cpp_llm(cfg: AppConfig) -> BaseLanguageModel:
         n_batch=cfg.llm_n_batch,
         use_mmap=cfg.llm_use_mmap,
         use_mlock=cfg.llm_use_mlock,
-        verbose=getattr(cfg, "llm_verbose", False),
+        verbose=True, #getattr(cfg, "llm_verbose", False),
     
         model_kwargs={
-            "chat_format": chat_format,
+            "chat_format": "chatml",
             "temperature": getattr(cfg, "llm_temperature", 0.2),
             "top_p": getattr(cfg, "llm_top_p", 0.95),
         },
@@ -73,9 +63,7 @@ def main() -> None:
 
     system = SystemMessage(
         content=(
-            "Du bist ein hilfreicher Assistent. "
-            "Wenn du etwas nicht weißt, sag: 'Ich weiß es nicht.' "
-            "Antworte ausschließlich auf Deutsch."
+           GENERAL_SYSTEM_PROMPT
         )
     )
     user = HumanMessage(content="Das ist ein Test. Antworte kurz: Was ist 2+2?")
